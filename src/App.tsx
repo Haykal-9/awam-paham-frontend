@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { UploadArea } from './components/UploadArea';
 import { LoadingState } from './components/LoadingState';
 import { OutputCard, type AnalysisResult } from './components/OutputCard';
@@ -10,6 +10,24 @@ function App() {
   const [currentState, setCurrentState] = useState<AppState>('UPLOAD');
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [resultData, setResultData] = useState<AnalysisResult | null>(null);
+  const [isBackendConnected, setIsBackendConnected] = useState<boolean>(true);
+
+  useEffect(() => {
+    const checkConnection = async () => {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      try {
+        const res = await fetch(`${apiUrl}/api/status`);
+        if (res.ok) {
+          setIsBackendConnected(true);
+        } else {
+          setIsBackendConnected(false);
+        }
+      } catch (e) {
+        setIsBackendConnected(false);
+      }
+    };
+    checkConnection();
+  }, []);
 
   const handleFileSelect = async (file: File) => {
     setCurrentState('PROCESSING');
@@ -48,16 +66,22 @@ function App() {
   };
 
   return (
-    <div className="container">
-      <nav>
-        <div className="brand">
-          <HeartPulse size={28} className="text-accent" />
-          AwamPaham
+    <div className="container" style={{ padding: '0', maxWidth: '100%' }}>
+      {!isBackendConnected && (
+        <div style={{ backgroundColor: '#E63946', color: 'white', padding: '0.5rem', textAlign: 'center', fontSize: '0.875rem', width: '100%' }}>
+          ⚠️ Peringatan: Gagal terhubung ke Backend API. Fitur analisa sedang tidak tersedia.
         </div>
-        <div className="disclaimer-nav">Bukan diagnosis medis</div>
-      </nav>
+      )}
+      <div className="container">
+        <nav>
+          <div className="brand">
+            <HeartPulse size={28} className="text-accent" />
+            AwamPaham
+          </div>
+          <div className="disclaimer-nav">Bukan diagnosis medis</div>
+        </nav>
 
-      <main className="flex-col w-full" style={{ flex: 1, justifyContent: 'center' }}>
+        <main className="flex-col w-full" style={{ flex: 1, justifyContent: 'center' }}>
         {currentState === 'UPLOAD' && (
           <UploadArea onFileSelect={handleFileSelect} />
         )}
@@ -79,7 +103,8 @@ function App() {
             </button>
           </div>
         )}
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

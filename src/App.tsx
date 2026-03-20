@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { UploadArea } from './components/UploadArea';
 import { LoadingState } from './components/LoadingState';
 import { OutputCard, type AnalysisResult } from './components/OutputCard';
